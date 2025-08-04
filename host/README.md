@@ -23,6 +23,7 @@ This is the host-side component of the PicoTalkButton project — a Python-based
 
 ```bash
 dpkg-deb --build ptt-listen
+```
 
 This will create ptt-listen.deb in the current directory
 
@@ -30,12 +31,14 @@ This will create ptt-listen.deb in the current directory
 
 ```bash
 PTTNAME="ptt-listen"; PTTVERSION=$(awk '/^Version:/ { print $2 }' $PTTNAME/DEBIAN/control); dpkg-deb --build ptt-listen "ptt-listen-$PTTVERSION.deb"
+```
 
 ### Extract and install locally
 
 ```bash
 dpkg -x ptt-listen.deb ~/.local/share/ptt-listen-install
 bash ~/.local/share/ptt-listen-install/ptt-listen/install.sh
+```
 
 The installer will prompt you to:
 
@@ -48,17 +51,20 @@ The installer will prompt you to:
 
 ```bash
 systemctl --user start ptt-listen.service
+```
 
 To enable it on boot:
 
 ```bash
 systemctl --user enable ptt-listen.service
+```
 
 ## Uninstallation
 
 
 ```bash
 bash ~/.local/share/ptt-listen-install/ptt-listen/uninstall.sh
+```
 
 This will stop/disable the service and remove the files.
 
@@ -69,11 +75,13 @@ To test manually without systemd:
 
 ```bash
 ~/.local/share/ptt-listen/ptt-listen/ptt-listen.py
+```
 
 To monitor logs:
 
 ```bash
 journalctl --user -fu ptt-listen.service
+```
 
 ## LICENSE
 MIT
