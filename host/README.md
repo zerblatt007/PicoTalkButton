@@ -58,7 +58,7 @@ systemctl --user enable ptt-listen.service
 
 
 ```bash
-~/.local/share/ptt-listen/ptt-listen/uninstall.sh
+bash ~/.local/share/ptt-listeni-install/ptt-listen/uninstall.sh
 
 This will stop/disable the service and remove the files.
 
