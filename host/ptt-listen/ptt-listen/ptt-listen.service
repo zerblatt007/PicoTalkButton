@@ -1,0 +1,11 @@
+[Unit]
+Description=PTT Button Listener
+
+[Service]
+ExecStart=%h/.local/share/ptt-listen/ptt-listen.py
+Restart=always
+RestartSec=2
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+
+[Install]
+WantedBy=default.target
