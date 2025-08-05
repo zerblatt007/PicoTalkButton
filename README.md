@@ -25,20 +25,21 @@ Works entirely in **user space**, no root required.
 
 The Raspberry Pi Pico acts as a USB **serial** device and controls the button and RGB LED.
 
-- When the button is **pressed**, the device sends:
-
+- When the button is **pressed**, the device sends to the host:
+PTT released
 PTT pressed
 - It listens for messages from the host:
 MUTED
 UNMUTED
 
 - The LED updates based on the last status received.
+- There is also a button on the Device for disabling the mute functionality, which means the host is unmuted. This removes the need for disconnecting the device and it still reflects the host mute status.
 
 ### 💻 Host (Linux + systemd service)
 
 The `ptt-listen.py` script:
 
-1. Opens the serial connection to the RP2040.
+1. Opens the serial connection to the RP2040 Device.
 2. Monitors messages:
  - On `PTT pressed`: unmutes the mic using:
    ```bash
