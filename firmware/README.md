@@ -9,7 +9,7 @@ A specific board for this application is in the works.
 ## Features
 
 - Serial device acting as a push-to-talk button.
-- Status LED for mute status with standby breath-blink using PWM.
+- Status WS2812 LED for mute status with standby breath-blink.
 - LED for keycap background light.
 - LED for on/off status with button to enter standby mode.
 
