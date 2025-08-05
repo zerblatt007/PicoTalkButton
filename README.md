@@ -4,6 +4,8 @@ A compact push-to-talk (PTT) mute button for Linux using a Raspberry Pi Pico (RP
 
 This tool provides a **dedicated physical button** to temporarily unmute your microphone during calls — similar to a radio PTT button. The LED on the device reflects your mute status in real-time.
 
+![Description](PicoTalkButton.jpg)
+
 Youtube: https://youtu.be/i37_w7bP-I0
 ---
 
