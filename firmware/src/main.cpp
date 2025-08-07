@@ -23,7 +23,7 @@ bool booting = true;
 bool host_ready = false;
 
 unsigned long disableButtonPressTime = 0;
-const unsigned long holdDuration = 2000; // 2 seconds hold
+const unsigned long holdDuration = 200; // 2 seconds hold
 
 unsigned long lastSerialMessageTime = 0;
 const unsigned long serialTimeout = 5000; // 5 seconds
@@ -41,27 +41,24 @@ unsigned long lastBreath = 0;
 const unsigned long breathInterval = 30;  // ~33 FPS
 
 void updateStatusLED() {
-  if (!serial_active || !device_enabled) {
-    // STANDBY mode -> breathe red
+  if (!serial_active && device_enabled) {
+    // STANDBY mode (host not connected but device is enabled) -> breathe blue
     if (!breathingActive) {
       breathingActive = true;
       lastBreath = millis();  // reset phase
     }
-    return;  // breathing handles LED updates
+    return;
   }
 
-  // Not in standby: turn off breathing
+  // Disable breathing in all other cases
   if (breathingActive) {
     breathingActive = false;
   }
 
-  uint32_t color;
-  if (!pcmute_state) {
-    color = COLOR_MIC_ON;
-  } else {
-    color = COLOR_MUTED;
-  }
+  // Determine color based on mute state
+  uint32_t color = pcmute_state ? COLOR_MUTED : COLOR_MIC_ON;
 
+  // Always show mute state color, even if device is disabled
   if (strip.getPixelColor(0) != color) {
     strip.setPixelColor(0, color);
     strip.show();
