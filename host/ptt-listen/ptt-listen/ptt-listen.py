@@ -13,17 +13,60 @@ PRODUCT_NAME = "PicoTalkButton"
 def log(message):
     print(f"{datetime.now():%F %T} {LOGTAG} {message}", flush=True)
 
-def get_mute_status():
+# A dictionary to keep track of the last known mute state of each source
+last_mute_states = {}
+
+def set_mute(mute: bool):
+    """Mute or unmute all sources and log changes only when the state changes."""
+    global last_mute_states
     result = subprocess.run(
-        ["pactl", "get-source-mute", "@DEFAULT_SOURCE@"],
+        ["pactl", "list", "short", "sources"],
         capture_output=True,
         text=True,
     )
-    return result.stdout.strip().endswith("yes")
+    sources = result.stdout.strip().splitlines()
+    for source in sources:
+        source_name = source.split()[1]  # Second column is the source name
 
-def set_mute(mute: bool):
-    subprocess.run(["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "1" if mute else "0"])
-    log(f"Set mute = {mute}")
+        # Check the current mute status of the source
+        mute_status = subprocess.run(
+            ["pactl", "get-source-mute", source_name],
+            capture_output=True,
+            text=True,
+        )
+        is_muted = mute_status.stdout.strip().endswith("yes")
+
+        # Only change and log if the state is different from the desired state
+        if is_muted != mute:
+            subprocess.run(["pactl", "set-source-mute", source_name, "1" if mute else "0"])
+            log(f"{'Muted' if mute else 'Unmuted'} source: {source_name}")
+            last_mute_states[source_name] = mute
+        else:
+            # Update the last known state without logging (no change)
+            last_mute_states[source_name] = is_muted
+    log(f"All sources {'muted' if mute else 'unmuted'} (only logged changes)")
+
+def get_mute_status():
+    """Check if all sources are muted and avoid unnecessary logs."""
+    result = subprocess.run(
+        ["pactl", "list", "short", "sources"],
+        capture_output=True,
+        text=True,
+    )
+    sources = result.stdout.strip().splitlines()
+    all_muted = True
+    for source in sources:
+        source_name = source.split()[1]  # Second column is the source name
+        mute_status = subprocess.run(
+            ["pactl", "get-source-mute", source_name],
+            capture_output=True,
+            text=True,
+        )
+        is_muted = mute_status.stdout.strip().endswith("yes")
+        if not is_muted:
+            all_muted = False
+    return all_muted
+
 
 def find_device():
     ports = serial.tools.list_ports.comports()
