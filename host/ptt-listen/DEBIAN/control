@@ -1,9 +1,9 @@
 Package: ptt-listen
-Version: 1.05
+Version: 1.06
 Section: utils
 Priority: optional
 Architecture: all
 Maintainer: Roger Storvik <roger.storvik@gmail.com>
 Description: Push-to-talk button listener service
- This installs a user-level systemd service to communicate with a PicoTalkButton over USB and mute/unmute your system microphone accordingly.
+ This installs a user-level systemd service to communicate with a PicoTalkButton over USB and mute/unmute all your systems microphones accordingly.
 
