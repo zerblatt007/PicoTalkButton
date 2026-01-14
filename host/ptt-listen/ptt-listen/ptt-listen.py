@@ -25,7 +25,7 @@ def cleanup(signum, frame):
 last_mute_states = {}
 
 def set_mute(mute: bool):
-    """Mute or unmute all sources and log changes only when the state changes."""
+    """Mute or unmute all input sources and log changes only when the state changes."""
     global last_mute_states
     result = subprocess.run(
         ["pactl", "list", "short", "sources"],
@@ -33,10 +33,15 @@ def set_mute(mute: bool):
         text=True,
     )
     sources = result.stdout.strip().splitlines()
+
     for source in sources:
         source_name = source.split()[1]  # Second column is the source name
 
-        # Check the current mute status of the source
+        # Exclude monitor sources (output-related sources)
+        if ".monitor" in source_name:
+            continue
+
+        # Check the current mute status of the input source
         mute_status = subprocess.run(
             ["pactl", "get-source-mute", source_name],
             capture_output=True,
@@ -52,10 +57,11 @@ def set_mute(mute: bool):
         else:
             # Update the last known state without logging (no change)
             last_mute_states[source_name] = is_muted
-    log(f"All sources {'muted' if mute else 'unmuted'} (only logged changes)")
+
+    log(f"All input sources {'muted' if mute else 'unmuted'} (only logged changes)")
 
 def get_mute_status():
-    """Check if all sources are muted and return the overall state and changed sources."""
+    """Check if all input sources are muted and return the overall state and changed sources."""
     global last_mute_states
     result = subprocess.run(
         ["pactl", "list", "short", "sources"],
@@ -69,6 +75,12 @@ def get_mute_status():
 
     for source in sources:
         source_name = source.split()[1]  # Second column is the source name
+
+        # Exclude monitor sources (output-related sources)
+        if ".monitor" in source_name:
+            continue
+
+        # Check the current mute status of the input source
         mute_status = subprocess.run(
             ["pactl", "get-source-mute", source_name],
             capture_output=True,
