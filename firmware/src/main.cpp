@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
+// FIRMWARE_VERSION is automatically injected by get_version.py at compile time
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "unknown"
+#endif
+
 #define PTT_PIN     4    // GP4
 #define DISABLE_PIN 1    // GP1
 #define LED_PIN    13    // Built-in LED
@@ -45,7 +50,7 @@ void updateStatusLED() {
     // STANDBY mode (host not connected but device is enabled) -> breathe blue
     if (!breathingActive) {
       breathingActive = true;
-      lastBreath = millis();  // reset phase
+      // Don't reset lastBreath - let animation continue smoothly
     }
     return;
   }
@@ -164,6 +169,10 @@ void loop() {
       host_ready = true;
       pcmute_state = false;
       updateStatusLED();
+    } else if (cmd.equalsIgnoreCase("VERSION")) {
+      Serial.print("Firmware version: ");
+      Serial.println(FIRMWARE_VERSION);
+      host_ready = true;
     } else {
 //      sendStatusMessage("Unknown command: " + cmd);
 //      sendStatusMessage((String("Unknown command: ") + cmd).c_str());
