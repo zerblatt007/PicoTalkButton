@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
+#define DEBUG_SERIAL 0
+
 #define PTT_PIN     4    // GP4
 #define DISABLE_PIN 1    // GP1
 
@@ -136,6 +138,7 @@ if (!device_enabled) {
   else {
     // Just set initial state if needed, no animation here
   }
+}
 
   return;
 }
@@ -182,12 +185,22 @@ void updateKeycapLED() {
   }
 }
 
+  // 4. Host-connected, known mute state
+  breathingActive = false;
+
+  uint32_t baseMuteColor =
+    pcmute_state ? COLOR_MUTED : COLOR_MIC_ON;
+
+  strip.setPixelColor(
+    LED_MUTE,
+    scaleColor(baseMuteColor, BRIGHTNESS_MUTE)
+  );
+}
+
 void updateBreathingLED() {
   if (!breathingActive) return;
 
   unsigned long now = millis();
-  if (now - lastBreath >= breathInterval) {
-    lastBreath = now;
 
     float phase = now / 1000.0f * PI;
     float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
@@ -203,7 +216,7 @@ void updateBreathingLED() {
 }
 
 void sendStatusMessage(const char* msg) {
-  if (!serial_active || !host_ready) return;  // only speak when spoken to
+  if (!serial_active) return;  // only speak when spoken to
 
   if (Serial && Serial.dtr() && Serial.availableForWrite() > 0) {
     Serial.println(msg);
@@ -252,6 +265,7 @@ void setup() {
 
   if (Serial && Serial.dtr()) {
     sendStatusMessage("Device booted");
+    sendStatusMessage("VERSION: " FIRMWARE_VERSION);
     sendStatusMessage("Device enabled");
   }
 
@@ -300,15 +314,23 @@ void loop() {
       host_ready = true;
       pcmute_state = true;
       updateStatusLED();
+      updateKeycapLED();
     } else if (cmd.equalsIgnoreCase("UNMUTE")) {
       //sendStatusMessage("Received UNMUTE from host");
       // set WS2812 to green
       host_ready = true;
       pcmute_state = false;
       updateStatusLED();
-    } else {
-//      sendStatusMessage("Unknown command: " + cmd);
-//      sendStatusMessage((String("Unknown command: ") + cmd).c_str());
+      updateKeycapLED();
+    } else if (cmd.equalsIgnoreCase("ACK")) {
+      #if DEBUG_SERIAL
+        sendStatusMessage("Received ACK from host");
+      #endif
+      lastSerialMessageTime = millis();
+      host_ready = true;
+      Serial.println("ACK");
+    } else if (cmd.equalsIgnoreCase("VERSION")) {
+      sendStatusMessage("VERSION: " FIRMWARE_VERSION);
     }
   }
 
@@ -353,6 +375,10 @@ void loop() {
       // No message yet — just waiting for the host to send first
     } else {
       host_ready = false;
+      // Auto-enable when host disconnects so device goes to standby mode
+      if (!device_enabled) {
+        device_enabled = true;
+      }
       updateStatusLED();  // Blue LED
     }
   }
@@ -370,6 +396,7 @@ void loop() {
     host_ready = false;
     sendStatusMessage("Host inactive -> standby mode");
     updateStatusLED();  // show blue
+    updateKeycapLED();   // clear frozen state
   }
 
   // Run breathing animation if enabled
@@ -380,5 +407,11 @@ if (!device_enabled && serial_active && host_ready) {
 }
 
 
-}
+  // At the end of loop()
+  if (!device_enabled && serial_active && host_ready) {
+    updateDisabledSparkLED();
+  }
 
+  // Single strip.show() to prevent flickering
+  strip.show();
+}
