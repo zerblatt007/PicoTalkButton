@@ -102,7 +102,6 @@ void updateDisabledSparkLED() {
   }
 
   strip.setPixelColor(LED_MUTE, color);
-  strip.show();
 }
 
 void updateKeycapLED() {
@@ -148,7 +147,6 @@ if (!device_enabled) {
     scaleColor(COLOR_DISABLED, BRIGHTNESS_MUTE)
   );
   breathingActive = false;
-  strip.show();
   return;
 }
 
@@ -162,7 +160,6 @@ if (!serial_active) {
     scaleColor(COLOR_STANDBY, BRIGHTNESS_MUTE)
   );
   breathingActive = true;
-  strip.show();
   return;
 }
 
@@ -183,28 +180,22 @@ if (!host_ready) {
     LED_MUTE,
     scaleColor(baseMuteColor, BRIGHTNESS_MUTE)
   );
-
-  strip.show();
 }
 
 void updateBreathingLED() {
   if (!breathingActive) return;
 
   unsigned long now = millis();
-  if (now - lastBreath >= breathInterval) {
-    lastBreath = now;
 
-    float phase = now / 1000.0f * PI;
-    float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
+  float phase = now / 1000.0f * PI;
+  float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
 
-    uint8_t b = (uint8_t)(255 * breath);
+  uint8_t b = (uint8_t)(255 * breath);
 
-    uint32_t c = scaleColor(strip.Color(0, 0, b), BRIGHTNESS_MUTE);
+  uint32_t c = scaleColor(strip.Color(0, 0, b), BRIGHTNESS_MUTE);
 
-    strip.setPixelColor(LED_MUTE, c);
-    strip.setPixelColor(LED_KEYCAP, c);
-    strip.show();
-  }
+  strip.setPixelColor(LED_MUTE, c);
+  strip.setPixelColor(LED_KEYCAP, c);
 }
 
 void sendStatusMessage(const char* msg) {
@@ -330,7 +321,7 @@ void loop() {
   // Handle disable button press and hold toggle
   static bool disableToggleLatched = false;
 
-  if (disable_pressed) {
+  if (disable_pressed && serial_active) {  // Only allow disable when host is connected
     if (disableButtonPressTime == 0) {
       disableButtonPressTime = millis();
       disableToggleLatched = false;
@@ -367,6 +358,10 @@ void loop() {
       // No message yet — just waiting for the host to send first
     } else {
       host_ready = false;
+      // Auto-enable when host disconnects so device goes to standby mode
+      if (!device_enabled) {
+        device_enabled = true;
+      }
       updateStatusLED();  // Blue LED
     }
   }
@@ -397,5 +392,6 @@ void loop() {
     updateDisabledSparkLED();
   }
 
-
+  // Single strip.show() to prevent flickering
+  strip.show();
 }
