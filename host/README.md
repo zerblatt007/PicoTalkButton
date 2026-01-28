@@ -17,9 +17,10 @@ This is the host-side component of the PicoTalkButton project — a Python-based
 - `pyserial` Python package (installed automatically)
 - `systemd` user services enabled
 
-## Installation (User Only)
+## Making .deb package
 
-### Build the `.deb` package
+### 1. Build the `.deb` package if you want to change something. 
+Or else just use the prebuilt ptt-listen-x.xx.deb files in the next step.
 
 ```bash
 dpkg-deb --build ptt-listen
@@ -27,13 +28,13 @@ dpkg-deb --build ptt-listen
 
 This will create ptt-listen.deb in the current directory
 
-#### With version number:
+#### Build .deb with version number:
 
 ```bash
 PTTNAME="ptt-listen"; PTTVERSION=$(awk '/^Version:/ { print $2 }' $PTTNAME/DEBIAN/control); dpkg-deb --build ptt-listen "ptt-listen-$PTTVERSION.deb"
 ```
 
-### Extract and install locally
+### 2. Extract and install locally
 
 ```bash
 dpkg -x ptt-listen.deb ~/.local/share/ptt-listen-install
@@ -46,7 +47,7 @@ The installer will prompt you to:
     - Install pyserial if needed
     - Set up the systemd user service
 
-### Start the service
+### 3. Start the service
 
 
 ```bash
@@ -58,6 +59,11 @@ To enable it on boot:
 ```bash
 systemctl --user enable ptt-listen.service
 ```
+
+### 4. Plug in PTT USB button 
+  If you have not done it already..
+
+  Start Muting! And check logs to know what is happening..
 
 ## Uninstallation
 
