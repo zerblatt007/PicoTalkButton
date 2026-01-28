@@ -22,10 +22,15 @@ A specific board for this application is in the works and will be available to o
 cd firmware
 platformio run --target upload
 
-## Checking USB device without host script running
+## Checking USB device without host script running (stop ppt-listen if it is running)
 
 ```bash
 systemctl --user stop ptt-listen.service
 pio device monitor --port /dev/ttyACM0
+```
 
-VERSION
+## To manually check if there is contact, enter these commands (no local echo)
+- VERSION  
+    Answers(git version): VERSION: 1ad177e-dirty
+- ACK  
+    Answers: ACK
