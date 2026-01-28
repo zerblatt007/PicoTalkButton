@@ -134,6 +134,13 @@ def main():
                 startup_ok = False
                 start_time = time.time()
 
+                # Request device version
+                try:
+                    ser.write(b"VERSION\n")
+                    log("Requested firmware version")
+                except Exception as e:
+                    log(f"Failed to request version: {e}")
+
                 # Initialize mute state and LED state
                 current_mute, _ = get_mute_status()
                 try:
@@ -214,6 +221,8 @@ def main():
                             last_overall_mute_status = True
                     elif line in ("Received MUTE from host", "Received UNMUTE from host"):
                         pass  # Ignore echoed commands
+                    elif line.startswith("VERSION:"):
+                        log(f"Device firmware: {line}")
                     else:
                         log(f"Unknown message: {line}")
 
