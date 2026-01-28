@@ -121,37 +121,15 @@ void updateStatusLED() {
     );
   }
 
-
-// 2. Device disabled: no local control
-if (!device_enabled) {
-  breathingActive = false;
-
-  // Host unknown → solid blue (no spark)
-  if (!serial_active || !host_ready) {
-    strip.setPixelColor(
-      LED_MUTE,
-      scaleColor(COLOR_STANDBY, BRIGHTNESS_MUTE)
-    );
-    strip.show();
+  // 2. Device disabled: no local control
+  if (!device_enabled) {
+    breathingActive = false;
+    return;
   }
-  // Host known → spark logic owns the LED
-  else {
-    // Just set initial state if needed, no animation here
-  }
-}
-
-  return;
-}
-
 
   // 3. Standby / host-unknown state
   if (!serial_active || !host_ready) {
-    strip.setPixelColor(
-      LED_MUTE,
-      scaleColor(COLOR_STANDBY, BRIGHTNESS_MUTE)
-    );
     breathingActive = true;
-    strip.show();
     return;
   }
 
@@ -165,8 +143,6 @@ if (!device_enabled) {
     LED_MUTE,
     scaleColor(baseMuteColor, BRIGHTNESS_MUTE)
   );
-
-  strip.show();
 }
 
 void updateKeycapLED() {
@@ -185,34 +161,20 @@ void updateKeycapLED() {
   }
 }
 
-  // 4. Host-connected, known mute state
-  breathingActive = false;
-
-  uint32_t baseMuteColor =
-    pcmute_state ? COLOR_MUTED : COLOR_MIC_ON;
-
-  strip.setPixelColor(
-    LED_MUTE,
-    scaleColor(baseMuteColor, BRIGHTNESS_MUTE)
-  );
-}
-
 void updateBreathingLED() {
   if (!breathingActive) return;
 
   unsigned long now = millis();
 
-    float phase = now / 1000.0f * PI;
-    float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
+  float phase = now / 1000.0f * PI;
+  float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
 
-    uint8_t b = (uint8_t)(255 * breath);
+  uint8_t b = (uint8_t)(255 * breath);
 
-    uint32_t c = scaleColor(strip.Color(0, 0, b), BRIGHTNESS_MUTE);
+  uint32_t c = scaleColor(strip.Color(0, 0, b), BRIGHTNESS_MUTE);
 
-    strip.setPixelColor(LED_MUTE, c);
-    strip.setPixelColor(LED_KEYCAP, c);
-    strip.show();
-  }
+  strip.setPixelColor(LED_MUTE, c);
+  strip.setPixelColor(LED_KEYCAP, c);
 }
 
 void sendStatusMessage(const char* msg) {
@@ -338,7 +300,7 @@ void loop() {
   // Handle disable button press and hold toggle
   static bool disableToggleLatched = false;
 
-  if (disable_pressed) {
+  if (disable_pressed && serial_active) {  // Only allow disable when host is connected
     if (disableButtonPressTime == 0) {
       disableButtonPressTime = millis();
       disableToggleLatched = false;
@@ -401,11 +363,6 @@ void loop() {
 
   // Run breathing animation if enabled
   updateBreathingLED();
-  // At the end of loop()
-if (!device_enabled && serial_active && host_ready) {
-  updateDisabledSparkLED();
-}
-
 
   // At the end of loop()
   if (!device_enabled && serial_active && host_ready) {
