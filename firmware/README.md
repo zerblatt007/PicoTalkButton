@@ -25,6 +25,7 @@ platformio run --target upload
 ## Checking USB device without host script running
 
 ```bash
+systemctl --user stop ptt-listen.service
 pio device monitor --port /dev/ttyACM0
 
 VERSION
