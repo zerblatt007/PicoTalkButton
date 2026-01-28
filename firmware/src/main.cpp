@@ -102,22 +102,7 @@ void updateDisabledSparkLED() {
   }
 
   strip.setPixelColor(LED_MUTE, color);
-}
-
-void updateKeycapLED() {
-  if (!device_enabled) {
-    strip.setPixelColor(LED_KEYCAP, 0);  // off
-    return;
-  }
-
-  if (ptt_state) {
-    strip.setPixelColor(
-      LED_KEYCAP,
-      scaleColor(COLOR_MIC_ON, BRIGHTNESS_KEYCAP)
-    );
-  } else {
-    strip.setPixelColor(LED_KEYCAP, 0);  // off
-  }
+  strip.show();
 }
 
 
@@ -139,36 +124,66 @@ void updateStatusLED() {
 
 // 2. Device disabled: no local control
 if (!device_enabled) {
-  updateKeycapLED();
-
-  // Always show disabled mode, regardless of host handshake
-  strip.setPixelColor(
-    LED_MUTE,
-    scaleColor(COLOR_DISABLED, BRIGHTNESS_MUTE)
-  );
   breathingActive = false;
-  return;
+
+  // Host unknown → solid blue (no spark)
+  if (!serial_active || !host_ready) {
+    strip.setPixelColor(
+      LED_MUTE,
+      scaleColor(COLOR_STANDBY, BRIGHTNESS_MUTE)
+    );
+    strip.show();
+  }
+  // Host known → spark logic owns the LED
+  else {
+    // Just set initial state if needed, no animation here
+  }
 }
 
+  return;
+}
 
 
   // 3. Standby / host-unknown state
-if (!serial_active) {
-  // USB disconnected → safe standby
+  if (!serial_active || !host_ready) {
+    strip.setPixelColor(
+      LED_MUTE,
+      scaleColor(COLOR_STANDBY, BRIGHTNESS_MUTE)
+    );
+    breathingActive = true;
+    strip.show();
+    return;
+  }
+
+  // 4. Host-connected, known mute state
+  breathingActive = false;
+
+  uint32_t baseMuteColor =
+    pcmute_state ? COLOR_MUTED : COLOR_MIC_ON;
+
   strip.setPixelColor(
     LED_MUTE,
-    scaleColor(COLOR_STANDBY, BRIGHTNESS_MUTE)
+    scaleColor(baseMuteColor, BRIGHTNESS_MUTE)
   );
-  breathingActive = true;
-  return;
+
+  strip.show();
 }
 
-// USB connected but host not ready → keep last known state
-if (!host_ready) {
-  breathingActive = true;
-  return;
-}
+void updateKeycapLED() {
+  if (!device_enabled) {
+    strip.setPixelColor(LED_KEYCAP, 0);  // off
+    return;
+  }
 
+  if (ptt_state) {
+    strip.setPixelColor(
+      LED_KEYCAP,
+      scaleColor(COLOR_MIC_ON, BRIGHTNESS_KEYCAP)
+    );
+  } else {
+    strip.setPixelColor(LED_KEYCAP, 0);  // off
+  }
+}
 
   // 4. Host-connected, known mute state
   breathingActive = false;
@@ -187,15 +202,17 @@ void updateBreathingLED() {
 
   unsigned long now = millis();
 
-  float phase = now / 1000.0f * PI;
-  float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
+    float phase = now / 1000.0f * PI;
+    float breath = (sin(phase) + 1.0f) * 0.5f;  // 0..1
 
-  uint8_t b = (uint8_t)(255 * breath);
+    uint8_t b = (uint8_t)(255 * breath);
 
-  uint32_t c = scaleColor(strip.Color(0, 0, b), BRIGHTNESS_MUTE);
+    uint32_t c = scaleColor(strip.Color(0, 0, b), BRIGHTNESS_MUTE);
 
-  strip.setPixelColor(LED_MUTE, c);
-  strip.setPixelColor(LED_KEYCAP, c);
+    strip.setPixelColor(LED_MUTE, c);
+    strip.setPixelColor(LED_KEYCAP, c);
+    strip.show();
+  }
 }
 
 void sendStatusMessage(const char* msg) {
@@ -321,7 +338,7 @@ void loop() {
   // Handle disable button press and hold toggle
   static bool disableToggleLatched = false;
 
-  if (disable_pressed && serial_active) {  // Only allow disable when host is connected
+  if (disable_pressed) {
     if (disableButtonPressTime == 0) {
       disableButtonPressTime = millis();
       disableToggleLatched = false;
@@ -383,9 +400,12 @@ void loop() {
   }
 
   // Run breathing animation if enabled
-  if (breathingActive) {
-    updateBreathingLED();
-  }
+  updateBreathingLED();
+  // At the end of loop()
+if (!device_enabled && serial_active && host_ready) {
+  updateDisabledSparkLED();
+}
+
 
   // At the end of loop()
   if (!device_enabled && serial_active && host_ready) {
