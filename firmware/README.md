@@ -5,7 +5,7 @@ This firmware runs on the Raspberry Pi Pico (RP2040) using PlatformIO.
 This development version is running on a DFRobot DFR0959 board like this: https://no.mouser.com/ProductDetail/DFRobot/DFR0959?qs=Jm2GQyTW%2FbjZmmIfIrcQfg%3D%3D
 
 A specific board for this application is in the works and will be available to order from JLCPCB with components soldered. These components are so tiny, that soldering manually will be very difficult.
-![Description](PicoTalkButton3dPCB.jpg)
+![Description](PicoTalkButton3dPCB.png)
 ## Features with custom board
 
 - Serial device acting as a push-to-talk button with Choc Switch.
