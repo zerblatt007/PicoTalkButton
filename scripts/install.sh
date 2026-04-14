@@ -58,12 +58,12 @@ ok "All prerequisites satisfied (curl, python3, dpkg, systemctl, pactl)"
 # ── resolve latest .deb ────────────────────────────────────────────────────────
 info "Fetching package listing from GitHub..."
 LATEST_DEB=$(
-	curl -fsSL "$API_URL" | python3 - <<'EOF'
+	curl -fsSL "$API_URL" | python3 -c '
 import sys, json, re
 
 try:
     entries = json.load(sys.stdin)
-except Exception as e:
+except Exception:
     print("", end="")
     sys.exit(0)
 
@@ -77,7 +77,7 @@ def ver_key(name):
 
 debs.sort(key=ver_key)
 print(debs[-1] if debs else "", end="")
-EOF
+'
 )
 
 [ -z "$LATEST_DEB" ] && die "No .deb package found in the repository. Check your internet connection and try again."
