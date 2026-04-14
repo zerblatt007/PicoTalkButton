@@ -7,6 +7,35 @@ This tool provides a **dedicated physical button** to temporarily unmute your mi
 ![Description](PicoTalkButton.jpg)
 
 Youtube: https://youtu.be/i37_w7bP-I0
+
+---
+
+## Quick Install (Linux, Debian-based)
+
+**Step 1 — Download the installer:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/zerblack007/PicoTalkButton/main/scripts/install.sh \
+    -o ptt-install.sh
+```
+
+**Step 2 — Run it:**
+
+```bash
+bash ptt-install.sh
+```
+
+The script will:
+1. Locate and download the latest `ptt-listen` `.deb` from this repository
+2. Extract and run the embedded installer (sets up a Python venv + `pyserial`)
+3. Register and start `ptt-listen.service` as a systemd user service
+4. Run a health check and print useful post-install commands
+
+> **Requirements:** `python3`, `pactl` (`sudo apt install pulseaudio-utils`), `dpkg`, `systemctl`
+
+After installation, plug in your PicoTalkButton USB device. The LED will turn red
+(muted) once the host daemon connects.
+
 ---
 
 ## 🧩 What It Does
