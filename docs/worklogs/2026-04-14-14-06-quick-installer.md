@@ -10,4 +10,4 @@ Added `scripts/install.sh` — a self-contained bash installer that fetches the 
 from the GitHub repository via the Contents API, extracts it with `dpkg -x`, runs the embedded
 `install.sh`, and finishes with a 4-point health check. Also added `scripts/bump-version.sh` for
 repeatable semantic version bumps to `host/ptt-listen/DEBIAN/control`. README updated with a
-prominent Quick Install section. Host package bumped to **v1.09**.
+prominent Quick Install section.
