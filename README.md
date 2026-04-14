@@ -15,7 +15,7 @@ Youtube: https://youtu.be/i37_w7bP-I0
 **Step 1 — Download the installer:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zerblack007/PicoTalkButton/main/scripts/install.sh \
+curl -fsSL https://raw.githubusercontent.com/zerblatt007/PicoTalkButton/main/scripts/install.sh \
     -o ptt-install.sh
 ```
 
