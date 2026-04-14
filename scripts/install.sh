@@ -15,7 +15,7 @@
 set -euo pipefail
 
 # ── configuration ──────────────────────────────────────────────────────────────
-REPO="zerblack007/PicoTalkButton"
+REPO="zerblatt007/PicoTalkButton"
 API_URL="https://api.github.com/repos/${REPO}/contents/host"
 RAW_BASE="https://raw.githubusercontent.com/${REPO}/main/host"
 INSTALL_ROOT="$HOME/.local/share/ptt-listen-install"
